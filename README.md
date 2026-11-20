@@ -1,9 +1,3 @@
-# Kashif Janjua — Premium Bilingual Personal Website
-
-A premium, bilingual (English / Czech) personal website and digital publication platform built for theologian and religious scholar Kashif Janjua. Styled with a sophisticated theological/editorial aesthetic (ivory backgrounds, serif typography, clean spacious layouts) and fully manageable via Sanity CMS.
-
----
-
 ## Tech Stack
 
 - **Framework:** [Astro](https://astro.build/) (Static Site Generation / SSR)
