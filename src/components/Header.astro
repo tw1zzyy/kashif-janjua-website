@@ -1,21 +1,22 @@
 ---
 // src/components/Header.astro
+const base = import.meta.env.BASE_URL;
 const { lang = 'en' } = Astro.params;
 
 const navLinks = {
   en: [
-    { name: 'Biography', url: '/en/biography' },
-    { name: 'Books', url: '/en/books' },
-    { name: 'Articles', url: '/en/articles' },
-    { name: 'Events', url: '/en/events' },
-    { name: 'Contact', url: '/en/contact' },
+    { name: 'Biography', url: '${base}/en/biography' },
+    { name: 'Books', url: '${base}/en/books' },
+    { name: 'Articles', url: '${base}/en/articles' },
+    { name: 'Events', url: '${base}/en/events' },
+    { name: 'Contact', url: '${base}/en/contact' },
   ],
   cs: [
-    { name: 'Životopis', url: '/cs/biography' },
-    { name: 'Knihy', url: '/cs/books' },
-    { name: 'Články', url: '/cs/articles' },
-    { name: 'Události', url: '/cs/events' },
-    { name: 'Kontakt', url: '/cs/contact' },
+    { name: 'Životopis', url: '${base}/cs/biography' },
+    { name: 'Knihy', url: '${base}/cs/books' },
+    { name: 'Články', url: '${base}/cs/articles' },
+    { name: 'Události', url: '${base}/cs/events' },
+    { name: 'Kontakt', url: '${base}/cs/contact' },
   ]
 };
 
