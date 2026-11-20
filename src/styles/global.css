@@ -1,69 +1,70 @@
-/* src/styles/global.css */
-@import "tailwindcss";
+@import "tailwindcss/index.css";
 
 @layer base {
   body {
     background-color: #fdfcf8;
     color: #1a1a1a;
-    font-family: 'Georgia', serif;
+    font-family: Georgia, serif;
     -webkit-font-smoothing: antialiased;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: serif;
+    font-family: Georgia, serif;
     letter-spacing: -0.025em;
     color: #2d3436;
   }
 }
 
-/* Custom Styles for Sanity Content */
 .prose {
-  @apply max-w-none;
+  max-width: none;
 }
+
+.prose h1 { font-size: 2.25rem; line-height: 2.5rem; }
+.prose h2 { font-size: 1.875rem; line-height: 2.25rem; }
+.prose h3 { font-size: 1.5rem; line-height: 2rem; }
+.prose h4 { font-size: 1.25rem; line-height: 1.75rem; }
+.prose h5 { font-size: 1.125rem; line-height: 1.5rem; }
+.prose h6 { font-size: 1rem; line-height: 1.5rem; }
 
 .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
-  @apply font-serif mt-8 mb-4 text-[#2d3436] font-bold;
+  font-family: Georgia, serif;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  color: #2d3436;
+  font-weight: 700;
 }
 
-.prose h1 { @apply text-4xl; }
-.prose h2 { @apply text-3xl; }
-.prose h3 { @apply text-2xl; }
-.prose h4 { @apply text-xl; }
-.prose h5 { @apply text-lg; }
-.prose h6 { @apply text-base; }
-
 .prose p {
-  @apply mb-4 leading-relaxed;
+  margin-bottom: 1.25rem;
+  line-height: 1.75;
 }
 
 .prose ul {
-  @apply list-disc ml-6 mb-4;
+  list-style-type: disc;
+  margin-left: 1.5rem;
+  margin-bottom: 1.25rem;
 }
 
 .prose ol {
-  @apply list-decimal ml-6 mb-4;
+  list-style-type: decimal;
+  margin-left: 1.5rem;
+  margin-bottom: 1.25rem;
 }
 
 .prose li {
-  @apply mb-2;
+  margin-bottom: 0.5rem;
 }
 
 .prose a {
-  @apply text-blue-600 underline hover:text-blue-800 transition-colors font-medium;
+  color: #2563eb;
+  text-decoration: underline;
+  font-weight: 500;
 }
 
 .prose img {
-  @apply rounded-lg shadow-md my-8 mx-auto max-w-full h-auto;
-}
-
-.prose blockquote {
-  @apply border-l-4 border-[#e0dcd5] pl-4 italic my-6 text-[#4a4a4a];
-}
-
-.prose strong {
-  @apply font-bold text-[#2d3436];
-}
-
-.prose em {
-  @apply italic;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  margin: 2rem auto;
+  max-width: 100%;
+  height: auto;
 }

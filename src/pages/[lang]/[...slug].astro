@@ -104,7 +104,7 @@ const components = {
           </div>
 
           {bookData.pdfUrl && (
-            <a href={bookData.pdfUrl} target="_blank" download class="inline-block bg-[#2d3436] text-white px-6 py-3 rounded hover:bg-[#1a1a1a] transition-colors font-sans">
+            <a href={bookData.pdfUrl} target="_blank" download class="inline-block bg-[#2d3436] text-white px-6 py-3 rounded-full hover:bg-[#1a1a1a] transition-colors font-sans">
               {lang === 'cs' ? 'Stáhnout knihu (PDF)' : 'Download Book (PDF)'}
             </a>
           )}
@@ -135,7 +135,7 @@ const components = {
       )}
 
       {eventData.registrationLink && (
-        <a href={eventData.registrationLink} target="_blank" class="inline-block bg-[#2d3436] text-white px-8 py-3 rounded mb-8 hover:bg-[#1a1a1a] transition-colors">
+        <a href={eventData.registrationLink} target="_blank" class="inline-block bg-[#2d3436] text-white px-8 py-3 rounded-full mb-8 hover:bg-[#1a1a1a] transition-colors">
           {lang === 'cs' ? 'Registrovat se na událost' : 'Register for Event'}
         </a>
       )}

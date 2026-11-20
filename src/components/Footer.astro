@@ -1,7 +1,38 @@
 ---
 // src/components/Footer.astro
+const { lang = 'en' } = Astro.params;
+const year = new Date().getFullYear();
 ---
 
-<footer class="border-t border-[#e0dcd5] py-12 px-8 bg-[#f5f2ed] text-center">
-  <p class="text-[#7a7a7a]">&copy; {new Date().getFullYear()} Kashif Janjua. All rights reserved.</p>
+<footer class="bg-[#2d3436] py-12 px-6 text-[#fdfcf8]">
+  <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+    <div class="text-center md:text-left">
+      <a href={`/${lang}`} class="text-xl font-serif font-bold hover:underline mb-2 block">Kashif Janjua</a>
+      <p class="text-sm text-stone-400 font-sans">
+        © {year} {lang === 'cs' ? 'Všechna práva vyhrazena.' : 'All rights reserved.'}
+      </p>
+    </div>
+
+    <div class="flex gap-8">
+      <a href={`/${lang}/contact`} class="text-sm font-sans font-semibold hover:underline">
+        {lang === 'cs' ? 'Kontakt' : 'Contact'}
+      </a>
+      <a href={`/${lang}/biography`} class="text-sm font-sans font-semibold hover:underline">
+        {lang === 'cs' ? 'Životopis' : 'Biography'}
+      </a>
+      <a href={`/${lang}/books`} class="text-sm font-sans font-semibold hover:underline">
+        {lang === 'cs' ? 'Knihy' : 'Books'}
+      </a>
+      <a href={`/${lang}/articles`} class="text-sm font-sans font-semibold hover:underline">
+        {lang === 'cs' ? 'Články' : 'Articles'}
+      </a>
+      <a href={`/${lang}/events`} class="text-sm font-sans font-semibold hover:underline">
+        {lang === 'cs' ? 'Události' : 'Events'}
+      </a>
+    </div>
+
+    <div class="text-sm text-stone-400 font-sans">
+      {lang === 'cs' ? 'Teolog a učenec' : 'Theologian & Scholar'}
+    </div>
+  </div>
 </footer>
