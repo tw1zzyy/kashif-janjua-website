@@ -1,0 +1,6 @@
+---
+import { urlFor } from '../sanity/lib/queries';
+const { node } = Astro.props;
+const imageUrl = urlFor(node).url();
+---
+<img src={imageUrl} alt="" class="rounded-lg shadow-md my-8 mx-auto max-w-full h-auto" />

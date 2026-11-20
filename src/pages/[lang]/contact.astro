@@ -1,0 +1,15 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import ContactForm from '../../components/ContactForm.astro';
+
+export function getStaticPaths() {
+  return [{ params: { lang: 'en' } }, { params: { lang: 'cs' } }];
+}
+
+const { lang } = Astro.params;
+---
+<Layout>
+  <div class="max-w-4xl mx-auto py-16 px-6">
+    <ContactForm lang={lang} />
+  </div>
+</Layout>

@@ -1,0 +1,48 @@
+---
+// src/pages/[lang]/index.astro
+import Layout from '../../layouts/Layout.astro';
+import { client } from '../../sanity/client';
+import { urlFor } from '../../sanity/lib/queries';
+import { PortableText } from 'astro-portabletext';
+import SanityImage from '../../components/SanityImage.astro';
+
+export function getStaticPaths() {
+  return [{ params: { lang: 'en' } }, { params: { lang: 'cs' } }];
+}
+
+const { lang } = Astro.params;
+const suffix = lang === 'cs' ? 'Cs' : 'En';
+
+const landing = await client.fetch(`*[_type == "landingPage"][0]{
+  "heroTitle": heroTitle${suffix},
+  "heroSubtitle": heroSubtitle${suffix},
+  "heroImage": heroImage.asset->url,
+  "content": featuredContent${suffix}
+}`);
+
+const components = {
+  type: {
+    image: SanityImage
+  }
+};
+---
+<Layout>
+  <section class="max-w-4xl mx-auto py-20 px-8">
+    <div class="text-center mb-16">
+      <h1 class="text-5xl sm:text-6xl font-serif mb-6 text-stone-900">{landing?.heroTitle || (lang === 'cs' ? 'Vítejte' : 'Welcome')}</h1>
+      {landing?.heroSubtitle && (
+        <p class="text-xl text-stone-600 font-serif max-w-2xl mx-auto">{landing.heroSubtitle}</p>
+      )}
+    </div>
+
+    {landing?.heroImage && (
+      <img src={landing.heroImage} alt="" class="w-full max-h-125 object-cover rounded-lg shadow-sm mb-16" />
+    )}
+
+    {landing?.content && (
+      <div class="prose prose-lg prose-stone font-serif max-w-none">
+        <PortableText value={landing.content} components={components} />
+      </div>
+    )}
+  </section>
+</Layout>

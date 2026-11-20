@@ -1,0 +1,59 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { client } from '../../sanity/client';
+
+export function getStaticPaths() {
+  return [{ params: { lang: 'en' } }, { params: { lang: 'cs' } }];
+}
+
+const { lang } = Astro.params;
+const suffix = lang === 'cs' ? 'Cs' : 'En';
+
+const books = await client.fetch(`*[_type == "book"]{
+  "slug": slug.current,
+  "title": title${suffix},
+  "description": description${suffix},
+  "coverImage": coverImage.asset->url,
+  publicationDate,
+  publisher
+}`);
+---
+<Layout>
+  <div class="max-w-6xl mx-auto py-16 px-6">
+    <h1 class="text-4xl sm:text-5xl font-serif mb-12 text-stone-900 text-center">{lang === 'cs' ? 'Knihy' : 'Books'}</h1>
+
+    {books.length > 0 ? (
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+        {books.map((book: any) => (
+          <div class="bg-[#fdfcf8] border border-[#e0dcd5] rounded-lg p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow">
+            <div>
+              {book.coverImage && (
+                <a href={`/${lang}/book/${book.slug}`}>
+                  <img src={book.coverImage} alt={book.title} class="w-full h-72 object-cover rounded mb-6" />
+                </a>
+              )}
+              <h2 class="text-2xl font-serif mb-3 text-stone-900">
+                <a href={`/${lang}/book/${book.slug}`} class="hover:underline">{book.title}</a>
+              </h2>
+              {book.publicationDate && (
+                <p class="text-xs text-stone-500 mb-4">{book.publicationDate} {book.publisher ? `• ${book.publisher}` : ''}</p>
+              )}
+              {book.description && (
+                <p class="text-stone-700 text-sm mb-6 line-clamp-3 font-serif">{book.description}</p>
+              )}
+            </div>
+            <div class="pt-4 border-t border-[#e0dcd5]">
+              <a href={`/${lang}/book/${book.slug}`} class="text-sm font-sans font-semibold text-[#2d3436] hover:underline">
+                {lang === 'cs' ? 'Zobrazit detail & stáhnout →' : 'View Details & Download →'}
+              </a>
+            </div>
+          </div>
+        ))}
+      </div>
+    ) : (
+      <div class="text-center py-16 text-stone-600 font-serif">
+        {lang === 'cs' ? 'Zatím nebyly přidány žádné knihy.' : 'No books added yet.'}
+      </div>
+    )}
+  </div>
+</Layout>

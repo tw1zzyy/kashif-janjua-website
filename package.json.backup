@@ -1,0 +1,34 @@
+{
+  "name": "premium-biography",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "sanity": "sanity dev",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@sanity/client": "^8.15.1",
+    "@sanity/image-url": "^2.1.1",
+    "@sanity/vision": "^5.31.2",
+    "astro": "^7.4.12",
+    "astro-portabletext": "^1.0.1",
+    "sanity": "^5.14.1",
+    "typescript": "^5.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.0",
+    "@tailwindcss/typography": "^0.5.4",
+    "autoprefixer": "^10.6.2",
+    "postcss": "^8.5.32",
+    "tailwindcss": "^4.0.0"
+  },
+  "allowScripts": {
+    "sharp@0.34.5": true,
+    "esbuild@0.27.3": true,
+    "esbuild@0.28.2": true
+  }
+}

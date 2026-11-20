@@ -1,0 +1,25 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { client } from '../../sanity/client';
+
+export function getStaticPaths() {
+  return [{ params: { lang: 'en' } }, { params: { lang: 'cs' } }];
+}
+
+const { lang } = Astro.params;
+const items = await client.fetch(`*[_type == "news"]{ "slug": slug.current, titleEn, titleCs }`);
+---
+<Layout>
+  <div class="max-w-4xl mx-auto py-16 px-6">
+    <h1 class="text-4xl font-serif mb-8">{lang === 'cs' ? 'Novinky' : 'News'}</h1>
+    <ul class="space-y-4">
+      {items.map((item: any) => (
+        <li>
+          <a href={`/${lang}/news/${item.slug}`} class="text-xl hover:underline">
+            {lang === 'cs' ? item.titleCs : item.titleEn}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</Layout>
