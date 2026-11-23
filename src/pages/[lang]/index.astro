@@ -1,0 +1,317 @@
+---
+// src/pages/[lang]/index.astro
+import Footer from '../../components/Footer.astro';
+import Layout from '../../layouts/Layout.astro';
+import { client } from '../../sanity/client';
+
+export function getStaticPaths() {
+  return [{ params: { lang: 'en' } }, { params: { lang: 'cs' } }];
+}
+
+const { lang } = Astro.params;
+const suffix = lang === 'cs' ? 'Cs' : 'En';
+
+// Fetch landing page data along with referenced books and articles, plus latest events
+const data = await client.fetch(`{
+  "landing": *[_type == "landingPage"][0]{
+    "heroTitle": heroTitle${suffix},
+    "heroSubtitle": heroSubtitle${suffix},
+    "heroImage": heroImage.asset->url,
+    "aboutText": aboutText${suffix},
+    "aboutImage": aboutImage.asset->url,
+    "featuredBooks": featuredBooks[]->{
+      "slug": slug.current,
+      "title": title${suffix},
+      "description": description${suffix},
+      "coverImage": coverImage.asset->url,
+      publicationDate
+    },
+    "featuredArticles": featuredArticles[]->{
+      "slug": slug.current,
+      "title": title${suffix},
+      publishedAt
+    }
+  },
+  "books": *[_type == "book"] | order(_createdAt desc)[0...3] {
+    "slug": slug.current,
+    "title": title${suffix},
+    "description": description${suffix},
+    "coverImage": coverImage.asset->url,
+    publicationDate
+  },
+  "articles": *[_type == "article"] | order(publishedAt desc)[0...3] {
+    "slug": slug.current,
+    "title": title${suffix},
+    publishedAt
+  },
+  "events": *[_type == "event"] | order(date asc)[0...2] {
+    "slug": slug.current,
+    "title": title${suffix},
+    "description": description${suffix},
+    "image": image.asset->url,
+    date,
+    location
+  }
+}`);
+
+const landing = data.landing || {};
+const displayBooks = (landing.featuredBooks?.length > 0) ? landing.featuredBooks : data.books;
+const displayArticles = (landing.featuredArticles?.length > 0) ? landing.featuredArticles : data.articles;
+const events = data.events || [];
+---
+
+<Layout>
+  <!-- A. HERO SECTION -->
+  <section class="relative bg-[#fdfcf8] pt-20 pb-24 px-6 md:px-12 border-b border-[#e0dcd5]">
+    <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      <div class="lg:col-span-7 space-y-6">
+        <span class="text-xs uppercase tracking-widest text-[#7a7a7a] font-sans font-semibold">
+          {lang === 'cs' ? 'Teolog a Náboženský Učenec' : 'Theologian & Religious Scholar'}
+        </span>
+        <h1 class="text-5xl sm:text-6xl lg:text-7xl font-serif text-stone-900 leading-[1.1]">
+          {landing.heroTitle || "Kashif Janjua"}
+        </h1>
+        {landing.heroSubtitle && (
+          <p class="text-xl sm:text-2xl text-stone-600 font-serif leading-relaxed">
+            {landing.heroSubtitle}
+          </p>
+        )}
+        <div class="pt-4 flex flex-wrap gap-4">
+          <a href={`/${lang}/biography`} class="bg-[#2d3436] text-white px-8 py-4 rounded-full font-sans text-sm font-semibold hover:bg-[#1a1a1a] transition-colors shadow-sm">
+            {lang === 'cs' ? 'Přečíst životopis' : 'Explore Biography'}
+          </a>
+          <a href={`/${lang}/contact`} class="border border-[#2d3436] text-[#2d3436] px-8 py-4 rounded-full font-sans text-sm font-semibold hover:bg-[#2d3436] hover:text-white transition-colors">
+            {lang === 'cs' ? 'Kontaktujte nás' : 'Get in Touch'}
+          </a>
+        </div>
+      </div>
+
+      <div class="lg:col-span-5">
+        {landing.heroImage ? (
+          <div class="relative">
+            <div class="absolute -inset-4 bg-[#e0dcd5] rounded-lg -z-10 transform rotate-1"></div>
+            <img src={landing.heroImage} alt="Kashif Janjua" class="w-full h-[480px] object-cover rounded-lg shadow-md" />
+          </div>
+        ) : (
+          <div class="w-full h-[480px] bg-[#f5f2ed] border border-[#e0dcd5] rounded-lg flex items-center justify-center text-stone-400 font-serif italic">
+            {lang === 'cs' ? 'Portrét není k dispozici' : 'Portrait placeholder'}
+          </div>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <!-- B. INTRODUCTION / ABOUT SECTION -->
+  <section class="py-24 px-6 md:px-12 bg-[#f5f2ed]/50">
+    <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+      {landing.aboutImage ? (
+        <img src={landing.aboutImage} alt="About" class="w-full h-[400px] object-cover rounded shadow-sm" />
+      ) : (
+        <div class="w-full h-[400px] bg-[#fdfcf8] border border-[#e0dcd5] rounded flex items-center justify-center text-stone-400 font-serif italic">
+          {lang === 'cs' ? 'Obrázek o autorovi' : 'About image placeholder'}
+        </div>
+      )}
+      <div class="space-y-6">
+        <span class="text-xs uppercase tracking-widest text-[#7a7a7a] font-sans font-semibold">
+          {lang === 'cs' ? 'O osobnosti' : 'About the Scholar'}
+        </span>
+        <h2 class="text-4xl font-serif text-stone-900">
+          {lang === 'cs' ? 'Hluboké zkoumání víry, filozofie a lidství' : 'A Lifelong Pursuit of Faith, Philosophy, and Humanity'}
+        </h2>
+        <p class="text-stone-700 font-serif leading-relaxed text-lg">
+          {landing.aboutText || (lang === 'cs'
+            ? 'Věnujte se zkoumání teologických textů, mezináboženského dialogu a morální filozofie skrze přednášky, knihy a eseje.'
+            : 'Dedicated to exploring theological texts, interfaith dialogue, and moral philosophy through published works, lectures, and scholarly discourse.')}
+        </p>
+        <div>
+          <a href={`/${lang}/biography`} class="inline-flex items-center gap-2 font-sans font-semibold text-[#2d3436] hover:underline">
+            {lang === 'cs' ? 'Přečíst celý životopis →' : 'Read Full Biography →'}
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- C. MAIN ACTIVITIES / AREAS OF WORK -->
+  <section class="py-24 px-6 md:px-12 bg-[#fdfcf8] border-b border-[#e0dcd5]">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center max-w-2xl mx-auto mb-16">
+        <span class="text-xs uppercase tracking-widest text-[#7a7a7a] font-sans font-semibold mb-2 block">
+          {lang === 'cs' ? 'Oblasti působení' : 'Areas of Focus'}
+        </span>
+        <h2 class="text-4xl font-serif text-stone-900">
+          {lang === 'cs' ? 'Hlavní činnosti' : 'Main Activities'}
+        </h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <a href={`/${lang}/books`} class="group bg-[#f5f2ed]/40 border border-[#e0dcd5] p-8 rounded-lg hover:bg-[#f5f2ed] transition-all">
+          <div class="text-3xl mb-4 text-stone-800 font-serif">01</div>
+          <h3 class="text-2xl font-serif mb-3 text-stone-900 group-hover:underline">
+            {lang === 'cs' ? 'Publikace a Knihy' : 'Books & Publications'}
+          </h3>
+          <p class="text-stone-600 font-serif leading-relaxed">
+            {lang === 'cs' ? 'Prozkoumat vydané monografie, teologické spisy a odborné studie ke stažení.' : 'Explore published monographs, theological treatises, and downloadable research texts.'}
+          </p>
+        </a>
+
+        <a href={`/${lang}/articles`} class="group bg-[#f5f2ed]/40 border border-[#e0dcd5] p-8 rounded-lg hover:bg-[#f5f2ed] transition-all">
+          <div class="text-3xl mb-4 text-stone-800 font-serif">02</div>
+          <h3 class="text-2xl font-serif mb-3 text-stone-900 group-hover:underline">
+            {lang === 'cs' ? 'Články & Eseje' : 'Articles & Essays'}
+          </h3>
+          <p class="text-stone-600 font-serif leading-relaxed">
+            {lang === 'cs' ? 'Komentáře k aktuálním duchovním otázkám, filozofické reflexe a eseje.' : 'Commentaries on contemporary spiritual questions, philosophical reflections, and essays.'}
+          </p>
+        </a>
+
+        <a href={`/${lang}/events`} class="group bg-[#f5f2ed]/40 border border-[#e0dcd5] p-8 rounded-lg hover:bg-[#f5f2ed] transition-all">
+          <div class="text-3xl mb-4 text-stone-800 font-serif">03</div>
+          <h3 class="text-2xl font-serif mb-3 text-stone-900 group-hover:underline">
+            {lang === 'cs' ? 'Události & Přednášky' : 'Events & Lectures'}
+          </h3>
+          <p class="text-stone-600 font-serif leading-relaxed">
+            {lang === 'cs' ? 'Sledujte nadcházející konference, veřejné přednášky a diskusní panely.' : 'Track upcoming conferences, public lectures, and interactive panel discussions.'}
+          </p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- D. FEATURED BOOKS / PUBLICATIONS -->
+  {displayBooks.length > 0 && (
+    <section class="py-24 px-6 md:px-12 bg-[#f5f2ed]">
+      <div class="max-w-6xl mx-auto">
+        <div class="flex flex-col md:flex-row justify-between items-end mb-16">
+          <div>
+            <span class="text-xs uppercase tracking-widest text-[#7a7a7a] font-sans font-semibold mb-2 block">
+              {lang === 'cs' ? 'Knihovna' : 'Library'}
+            </span>
+            <h2 class="text-4xl font-serif text-stone-900">
+              {lang === 'cs' ? 'Doporučené knihy' : 'Featured Publications'}
+            </h2>
+          </div>
+          <a href={`/${lang}/books`} class="mt-4 md:mt-0 font-sans font-semibold text-sm text-[#2d3436] hover:underline">
+            {lang === 'cs' ? 'Zobrazit všechny knihy →' : 'View All Books →'}
+          </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {displayBooks.map((book: any) => (
+            <div class="bg-[#fdfcf8] border border-[#e0dcd5] rounded-lg p-6 flex flex-col justify-between shadow-sm">
+              <div>
+                {book.coverImage && (
+                  <a href={`/${lang}/book/${book.slug}`}>
+                    <img src={book.coverImage} alt={book.title} class="w-full h-72 object-cover rounded mb-6 shadow-sm" />
+                  </a>
+                )}
+                <h3 class="text-2xl font-serif mb-2 text-stone-900">
+                  <a href={`/${lang}/book/${book.slug}`} class="hover:underline">{book.title}</a>
+                </h3>
+                {book.description && (
+                  <p class="text-stone-600 text-sm font-serif mb-6 line-clamp-3">{book.description}</p>
+                )}
+              </div>
+              <div class="pt-4 border-t border-[#e0dcd5]">
+                <a href={`/${lang}/book/${book.slug}`} class="text-sm font-sans font-semibold text-[#2d3436] hover:underline">
+                  {lang === 'cs' ? 'Stáhnout / Detail →' : 'Download / Details →'}
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- E. FEATURED ARTICLES & F. UPCOMING EVENTS -->
+  <section class="py-24 px-6 md:px-12 bg-[#fdfcf8] border-b border-[#e0dcd5]">
+    <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16">
+      {/* Articles */}
+      <div>
+        <div class="flex justify-between items-end mb-10">
+          <h2 class="text-3xl font-serif text-stone-900">
+            {lang === 'cs' ? 'Poslední články' : 'Latest Articles'}
+          </h2>
+          <a href={`/${lang}/articles`} class="text-sm font-sans font-semibold text-[#2d3436] hover:underline">
+            {lang === 'cs' ? 'Všechny články →' : 'All Articles →'}
+          </a>
+        </div>
+
+        {displayArticles.length > 0 ? (
+          <div class="space-y-6">
+            {displayArticles.map((article: any) => (
+              <div class="border-b border-[#e0dcd5] pb-6">
+                {article.publishedAt && (
+                  <p class="text-xs text-stone-500 font-sans mb-1">
+                    {new Date(article.publishedAt).toLocaleDateString(lang === 'cs' ? 'cs-CZ' : 'en-US', { dateStyle: 'long' })}
+                  </p>
+                )}
+                <h3 class="text-xl font-serif text-stone-900">
+                  <a href={`/${lang}/article/${article.slug}`} class="hover:underline">{article.title}</a>
+                </h3>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p class="text-stone-500 font-serif italic">{lang === 'cs' ? 'Žádné články k zobrazení.' : 'No articles to display.'}</p>
+        )}
+      </div>
+
+      {/* Events */}
+      <div>
+        <div class="flex justify-between items-end mb-10">
+          <h2 class="text-3xl font-serif text-stone-900">
+            {lang === 'cs' ? 'Nadcházející události' : 'Upcoming Events'}
+          </h2>
+          <a href={`/${lang}/events`} class="text-sm font-sans font-semibold text-[#2d3436] hover:underline">
+            {lang === 'cs' ? 'Všechny události →' : 'All Events →'}
+          </a>
+        </div>
+
+        {events.length > 0 ? (
+          <div class="space-y-6">
+            {events.map((event: any) => (
+              <div class="border-b border-[#e0dcd5] pb-6">
+                <div class="flex items-center gap-2 text-xs text-stone-500 font-sans mb-1">
+                  <span>{new Date(event.date).toLocaleDateString(lang === 'cs' ? 'cs-CZ' : 'en-US', { dateStyle: 'medium' })}</span>
+                  {event.location && (
+                    <>
+                      <span>•</span>
+                      <span>{event.location}</span>
+                    </>
+                  )}
+                </div>
+                <h3 class="text-xl font-serif text-stone-900">
+                  <a href={`/${lang}/event/${event.slug}`} class="hover:underline">{event.title}</a>
+                </h3>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p class="text-stone-500 font-serif italic">{lang === 'cs' ? 'Žádné nadcházející události.' : 'No upcoming events.'}</p>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <!-- H. FINAL CTA -->
+  <section class="py-24 px-6 md:px-12 bg-[#2d3436] text-[#fdfcf8] text-center">
+    <div class="max-w-3xl mx-auto space-y-6">
+      <h2 class="text-4xl sm:text-5xl font-serif leading-tight">
+        {lang === 'cs' ? 'Spojte se s námi nebo objevte dílo' : 'Explore the Works & Get in Touch'}
+      </h2>
+      <p class="text-stone-300 font-serif text-lg max-w-xl mx-auto">
+        {lang === 'cs'
+          ? 'Máte dotaz, zájem o přednášku nebo spolupráci? Neváhejte nás kontaktovat.'
+          : 'Have a question, inquiry for a lecture, or partnership proposal? We would love to hear from you.'}
+      </p>
+      <div class="pt-4">
+        <a href={`/${lang}/contact`} class="inline-block bg-[#fdfcf8] text-[#2d3436] px-8 py-4 rounded-full font-sans text-sm font-semibold hover:bg-[#e0dcd5] transition-colors">
+          {lang === 'cs' ? 'Napište zprávu' : 'Send a Message'}
+        </a>
+      </div>
+    </div>
+  </section>
+
+</Layout>

@@ -1,0 +1,164 @@
+---
+import { client } from '../../sanity/client';
+import { urlFor } from '../../sanity/lib/queries';
+import Layout from '../../layouts/Layout.astro';
+import { PortableText } from 'astro-portabletext';
+import SanityImage from '../../components/SanityImage.astro';
+
+export async function getStaticPaths() {
+  const data = await client.fetch(`{
+    "articles": *[_type == "article"]{ "slug": slug.current },
+    "books": *[_type == "book"]{ "slug": slug.current },
+    "news": *[_type == "news"]{ "slug": slug.current },
+    "events": *[_type == "event"]{ "slug": slug.current }
+  }`);
+
+  const paths = [];
+  for (const lang of ['en', 'cs']) {
+    paths.push({ params: { lang, slug: 'biography' } });
+
+    for (const article of data.articles) paths.push({ params: { lang, slug: `article/${article.slug}` } });
+    for (const book of data.books) paths.push({ params: { lang, slug: `book/${book.slug}` } });
+    for (const item of data.news) paths.push({ params: { lang, slug: `news/${item.slug}` } });
+    for (const event of data.events) paths.push({ params: { lang, slug: `event/${event.slug}` } });
+  }
+  return paths;
+}
+
+const { lang, slug } = Astro.params;
+
+let pageData;
+let isBook = false;
+let isEvent = false;
+let bookData = null;
+let eventData = null;
+
+if (slug === 'biography') {
+  pageData = await client.fetch(`*[_type == "biography"][0]{
+    "title": title,
+    "content": ${lang === 'cs' ? 'contentCs' : 'content'},
+    "image": portrait.asset->url
+  }`);
+} else {
+  const [type, itemSlug] = slug ? slug.split('/') : ['', ''];
+  const suffix = lang === 'cs' ? 'Cs' : 'En';
+
+  if (type === 'book') {
+    isBook = true;
+    bookData = await client.fetch(`*[_type == "book" && slug.current == $slug][0]{
+      "title": title${suffix},
+      "description": description${suffix},
+      "coverImage": coverImage.asset->url,
+      publicationDate,
+      publisher,
+      isbn,
+      "pdfUrl": pdfFile.asset->url
+    }`, { slug: itemSlug });
+  } else if (type === 'event') {
+    isEvent = true;
+    eventData = await client.fetch(`*[_type == "event" && slug.current == $slug][0]{
+      "title": title${suffix},
+      "content": content${suffix},
+      "description": description${suffix},
+      "image": image.asset->url,
+      date,
+      location,
+      registrationLink
+    }`, { slug: itemSlug });
+  } else {
+    pageData = await client.fetch(`*[_type == $type && slug.current == $slug][0]{
+      "title": title${suffix},
+      "content": content${suffix},
+      "image": image.asset->url
+    }`, { type, slug: itemSlug });
+  }
+}
+
+const components = {
+  type: {
+    image: SanityImage
+  }
+};
+---
+
+<Layout>
+  {isBook && bookData ? (
+    <article class="max-w-4xl mx-auto py-16 px-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+        {bookData.coverImage && (
+          <div class="md:col-span-1">
+            <img src={bookData.coverImage} alt={bookData.title} class="w-full h-auto rounded-lg shadow-md" />
+          </div>
+        )}
+        <div class={`${bookData.coverImage ? 'md:col-span-2' : 'md:col-span-3'}`}>
+          <h1 class="text-4xl sm:text-5xl font-serif mb-4 text-stone-900">{bookData.title}</h1>
+
+          <div class="text-sm text-stone-600 mb-6 space-y-1">
+            {bookData.publicationDate && <p><strong>{lang === 'cs' ? 'Datum vydání' : 'Publication Date'}:</strong> {bookData.publicationDate}</p>}
+            {bookData.publisher && <p><strong>{lang === 'cs' ? 'Vydavatel' : 'Publisher'}:</strong> {bookData.publisher}</p>}
+            {bookData.isbn && <p><strong>ISBN:</strong> {bookData.isbn}</p>}
+          </div>
+
+          <div class="prose prose-lg prose-stone font-serif max-w-none mb-8">
+            <p class="whitespace-pre-line">{bookData.description}</p>
+          </div>
+
+          {bookData.pdfUrl && (
+            <a href={bookData.pdfUrl} target="_blank" download class="inline-block bg-[#2d3436] text-white px-6 py-3 rounded-full hover:bg-[#1a1a1a] transition-colors font-sans">
+              {lang === 'cs' ? 'Stáhnout knihu (PDF)' : 'Download Book (PDF)'}
+            </a>
+          )}
+        </div>
+      </div>
+    </article>
+  ) : isEvent && eventData ? (
+    <article class="max-w-4xl mx-auto py-16 px-6">
+      <h1 class="text-5xl font-serif mb-4 text-stone-900">{eventData.title}</h1>
+
+      <div class="flex flex-wrap gap-4 text-stone-600 mb-8 border-b border-[#e0dcd5] pb-6">
+        {eventData.date && (
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            <span>{new Date(eventData.date).toLocaleDateString(lang === 'cs' ? 'cs-CZ' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+          </div>
+        )}
+        {eventData.location && (
+          <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(eventData.location)}`} target="_blank" class="flex items-center gap-2 hover:text-[#2d3436] transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            <span class="underline underline-offset-4 decoration-stone-300">{eventData.location}</span>
+          </a>
+        )}
+      </div>
+
+      {eventData.image && (
+        <img src={eventData.image} alt={eventData.title} class="w-full h-auto mb-8 rounded-lg shadow-sm" />
+      )}
+
+      {eventData.registrationLink && (
+        <a href={eventData.registrationLink} target="_blank" class="inline-block bg-[#2d3436] text-white px-8 py-3 rounded-full mb-8 hover:bg-[#1a1a1a] transition-colors">
+          {lang === 'cs' ? 'Registrovat se na událost' : 'Register for Event'}
+        </a>
+      )}
+
+      <div class="prose prose-lg prose-stone font-serif max-w-none">
+        {eventData.content ? (
+          <PortableText value={eventData.content} components={components} />
+        ) : (
+          <p class="whitespace-pre-line">{eventData.description}</p>
+        )}
+      </div>
+    </article>
+  ) : pageData ? (
+    <article class="max-w-4xl mx-auto py-16 px-6">
+      <h1 class="text-5xl font-serif mb-8 text-stone-900">{pageData.title}</h1>
+      {pageData.image && (
+        <img src={pageData.image} alt={pageData.title} class="w-full h-auto mb-8 rounded-lg shadow-sm" />
+      )}
+      <div class="prose prose-lg prose-stone font-serif max-w-none">
+        <PortableText value={pageData.content} components={components} />
+      </div>
+    </article>
+  ) : (
+    <div class="text-center py-20">Page not found</div>
+  )}
+</Layout>

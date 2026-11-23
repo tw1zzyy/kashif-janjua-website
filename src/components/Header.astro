@@ -1,0 +1,64 @@
+---
+// src/components/Header.astro
+const { lang = 'en' } = Astro.params;
+
+const navLinks = {
+  en: [
+    { name: 'Biography', url: '/en/biography' },
+    { name: 'Books', url: '/en/books' },
+    { name: 'Articles', url: '/en/articles' },
+    { name: 'Events', url: '/en/events' },
+    { name: 'Contact', url: '/en/contact' },
+  ],
+  cs: [
+    { name: 'Životopis', url: '/cs/biography' },
+    { name: 'Knihy', url: '/cs/books' },
+    { name: 'Články', url: '/cs/articles' },
+    { name: 'Události', url: '/cs/events' },
+    { name: 'Kontakt', url: '/cs/contact' },
+  ]
+};
+
+const currentLinks = navLinks[lang as keyof typeof navLinks] || navLinks.en;
+---
+
+<header class="border-b border-[#e0dcd5] py-4 px-4 sm:px-8 flex flex-col sm:flex-row justify-between items-center gap-4 bg-[#fdfcf8]">
+  <div class="flex items-center justify-between w-full sm:w-auto">
+    <a href={`/${lang}`} class="text-xl sm:text-2xl font-serif font-bold text-[#2d3436] hover:text-[#1a1a1a] transition-colors">Kashif Janjua</a>
+
+    <!-- Mobile Lang Switcher & Menu Toggle -->
+    <div class="flex items-center gap-4 sm:hidden">
+      <div class="flex gap-2">
+        <a href={`/en/${Astro.url.pathname.split('/').slice(2).join('/')}`} class={`text-sm font-semibold ${lang === 'en' ? 'underline' : 'text-[#a0a0a0]'}`}>EN</a>
+        <a href={`/cs/${Astro.url.pathname.split('/').slice(2).join('/')}`} class={`text-sm font-semibold ${lang === 'cs' ? 'underline' : 'text-[#a0a0a0]'}`}>CS</a>
+      </div>
+      <button id="menu-toggle" aria-label="Toggle Menu" class="text-[#2d3436] focus:outline-none">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Navigation Links -->
+  <nav id="nav-menu" class="hidden sm:flex flex-col sm:flex-row items-center gap-4 sm:gap-8 w-full sm:w-auto pb-4 sm:pb-0 text-center">
+    {currentLinks.map(link => (
+      <a href={link.url} class="text-[#4a4a4a] hover:text-[#1a1a1a] transition-colors text-lg sm:text-base py-2 block w-full sm:w-auto">{link.name}</a>
+    ))}
+  </nav>
+
+  <!-- Desktop Lang Switcher -->
+  <div class="hidden sm:flex gap-2">
+    <a href={`/en/${Astro.url.pathname.split('/').slice(2).join('/')}`} class={`text-sm font-semibold ${lang === 'en' ? 'underline' : 'text-[#a0a0a0]'}`}>EN</a>
+    <a href={`/cs/${Astro.url.pathname.split('/').slice(2).join('/')}`} class={`text-sm font-semibold ${lang === 'cs' ? 'underline' : 'text-[#a0a0a0]'}`}>CS</a>
+  </div>
+</header>
+
+<script>
+  const toggleBtn = document.getElementById('menu-toggle');
+  const navMenu = document.getElementById('nav-menu');
+
+  toggleBtn?.addEventListener('click', () => {
+    navMenu?.classList.toggle('hidden');
+  });
+</script>
